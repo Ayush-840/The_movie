@@ -6,6 +6,49 @@
 
 ---
 
+## 💡 Project Idea
+
+### What is Movie Explorer?
+
+**Movie Explorer** is a movie discovery web application that lets users search, explore, and save their favourite films — all in one place. It pulls live data from three public APIs to give users a complete picture: rich movie metadata, trending titles with high-quality posters, and real-time streaming availability (Netflix, Prime, Hotstar, etc.).
+
+### The Problem It Solves
+Users often struggle to find where a movie is streaming, or want to quickly compare ratings and discover similar films. Movie Explorer solves this by combining data from multiple sources into a single, clean interface.
+
+### Who Is It For?
+Anyone who loves movies — students, casual viewers, or enthusiasts who want to keep a personal watchlist and know exactly where to watch a title.
+
+### Core User Stories
+
+| # | As a user, I want to… | So that… |
+|---|----------------------|----------|
+| 1 | Search for any movie by name | I can quickly find information about it |
+| 2 | Filter movies by genre or year | I can browse content I actually enjoy |
+| 3 | Sort results by rating or release date | I can find the best or newest titles first |
+| 4 | See which streaming platforms carry a movie | I don't waste time searching multiple apps |
+| 5 | Save movies to a Favourites list | I can build a personal watchlist |
+| 6 | Switch between dark and light mode | I can use the app comfortably at any time |
+
+### Data Flow Diagram
+
+```
+User types movie name
+       │
+       ▼
+  OMDb API  ──────► Movie details (title, year, rating, plot, poster)
+       │
+       ▼
+  TMDB API  ──────► Trending movies, genres, high-res posters
+       │
+       ▼
+Watchmode API ───► Streaming sources (Netflix, Prime Video, Hotstar…)
+       │
+       ▼
+   UI renders cards with all combined information
+```
+
+---
+
 ## 📌 Project Overview
 
 **Movie Explorer** is a feature-rich web application that lets users search, filter, and sort movies in real time using data fetched from public movie APIs. The app provides detailed information about movies — including ratings, genres, release year, cast, and streaming availability — all in a clean, responsive interface.
@@ -14,11 +57,85 @@
 
 ## 🌐 APIs Used
 
-| API | Purpose | Docs |
-|-----|---------|------|
-| **OMDb API** | Movie search, ratings, plot, and metadata | [omdbapi.com](https://www.omdbapi.com/) |
-| **The Movie Database (TMDB)** | Trending movies, genres, poster images | [developer.themoviedb.org](https://developer.themoviedb.org/docs/getting-started) |
-| **Watchmode API** | Streaming platform availability per title | [api.watchmode.com](https://api.watchmode.com/) |
+### 1. 🎥 OMDb API — Open Movie Database
+- **Base URL:** `https://www.omdbapi.com/`
+- **Docs:** [omdbapi.com](https://www.omdbapi.com/)
+- **Auth:** Free API key (register at omdbapi.com)
+
+| Endpoint | Usage |
+|----------|-------|
+| `?s={title}&apikey={key}` | Search movies by title (returns list) |
+| `?i={imdbID}&apikey={key}` | Fetch full details by IMDb ID |
+| `?t={title}&y={year}&apikey={key}` | Fetch a specific movie by exact title |
+
+**Data provided:** Title, Year, Rated, Genre, Director, Actors, Plot, IMDb Rating, Poster URL, Awards
+
+```js
+// Example fetch
+const res = await fetch(`https://www.omdbapi.com/?s=Inception&apikey=${OMDB_KEY}`);
+const data = await res.json();
+// data.Search → array of movie results
+```
+
+---
+
+### 2. 🎞️ TMDB API — The Movie Database
+- **Base URL:** `https://api.themoviedb.org/3/`
+- **Docs:** [developer.themoviedb.org](https://developer.themoviedb.org/docs/getting-started)
+- **Auth:** Bearer Token (free account at themoviedb.org)
+
+| Endpoint | Usage |
+|----------|-------|
+| `trending/movie/week` | Get trending movies this week |
+| `movie/popular` | Get currently popular movies |
+| `genre/movie/list` | Get all genre IDs and names |
+| `search/movie?query={title}` | Search movies by name |
+| `movie/{id}` | Full movie details by TMDB ID |
+
+**Data provided:** Poster & backdrop images, genres array, vote average, popularity score, overview
+
+```js
+// Example fetch
+const res = await fetch(`https://api.themoviedb.org/3/trending/movie/week`, {
+  headers: { Authorization: `Bearer ${TMDB_KEY}` }
+});
+const data = await res.json();
+// data.results → array of trending movies
+// Poster image: `https://image.tmdb.org/t/p/w500${data.results[0].poster_path}`
+```
+
+---
+
+### 3. 📺 Watchmode API — Streaming Availability
+- **Base URL:** `https://api.watchmode.com/v1/`
+- **Docs:** [api.watchmode.com](https://api.watchmode.com/)
+- **Auth:** Free API key (register at watchmode.com)
+
+| Endpoint | Usage |
+|----------|-------|
+| `search/?search_field=name&search_value={title}` | Find a title's Watchmode ID |
+| `title/{id}/sources/` | Get streaming platforms for a title |
+
+**Data provided:** Source name (Netflix, Prime Video, Hotstar), type (subscription/free/rent/buy), web URL
+
+```js
+// Example fetch
+const res = await fetch(
+  `https://api.watchmode.com/v1/title/${watchmodeId}/sources/?apiKey=${WATCHMODE_KEY}`
+);
+const sources = await res.json();
+// sources → [{name: "Netflix", type: "sub", web_url: "..."}]
+```
+
+---
+
+### API Summary Table
+
+| API | Free Tier Limit | Key Data Used |
+|-----|----------------|---------------|
+| OMDb | 1,000 req/day | Title, Rating, Plot, Poster |
+| TMDB | ~40 req/10 sec | Trending, Genres, HD Posters |
+| Watchmode | 1,000 req/month | Streaming platform sources |
 
 ---
 
