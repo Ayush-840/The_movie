@@ -1,57 +1,52 @@
-# 🎬 Movie Explorer — Web Application
+# 🎬 Movie Explorer
 
-> A dynamic movie discovery web application built with vanilla JavaScript and integrated with public movie APIs.  
+> A movie discovery web app built with HTML, CSS & Vanilla JavaScript  
 > **Graded Individual Project | Newton School of Technology, ADY Patil University, Pune**  
-> **Student:** Ayush Kumar
+> **Student:** Ayush Kumar &nbsp;|&nbsp; Academic Year 2025–26
 
 ---
 
 ## 💡 Project Idea
 
-### What is Movie Explorer?
-
-**Movie Explorer** is a movie discovery web application that lets users search, explore, and save their favourite films — all in one place. It pulls live data from three public APIs to give users a complete picture: rich movie metadata, trending titles with high-quality posters, and real-time streaming availability (Netflix, Prime, Hotstar, etc.).
+### Concept
+**Movie Explorer** is a one-stop movie discovery platform. Users can search for any movie, filter by genre or year, sort by rating, and instantly see which streaming services carry it — all without leaving the app.
 
 ### The Problem It Solves
-Users often struggle to find where a movie is streaming, or want to quickly compare ratings and discover similar films. Movie Explorer solves this by combining data from multiple sources into a single, clean interface.
+People waste time jumping between Netflix, Prime, Hotstar and Google just to find where a movie is streaming and whether it's worth watching. Movie Explorer brings all that information together in a single, clean interface.
 
-### Who Is It For?
-Anyone who loves movies — students, casual viewers, or enthusiasts who want to keep a personal watchlist and know exactly where to watch a title.
+### Key Idea in One Line
+> *"Search any movie → see its details, rating, and where to stream it — all at once."*
 
-### Core User Stories
+### User Stories
 
-| # | As a user, I want to… | So that… |
-|---|----------------------|----------|
-| 1 | Search for any movie by name | I can quickly find information about it |
-| 2 | Filter movies by genre or year | I can browse content I actually enjoy |
-| 3 | Sort results by rating or release date | I can find the best or newest titles first |
-| 4 | See which streaming platforms carry a movie | I don't waste time searching multiple apps |
-| 5 | Save movies to a Favourites list | I can build a personal watchlist |
-| 6 | Switch between dark and light mode | I can use the app comfortably at any time |
+| # | I want to… | So that… |
+|---|-----------|----------|
+| 1 | Search movies by name | I find info instantly |
+| 2 | Filter by genre / year | I browse content I like |
+| 3 | Sort by rating or release date | I discover the best first |
+| 4 | See streaming platforms per title | I know exactly where to watch |
+| 5 | Save movies to Favourites | I build a personal watchlist |
+| 6 | Toggle Dark / Light mode | I use the app at any time |
 
-### Data Flow Diagram
+### How the APIs Work Together
 
 ```
-User types movie name
-       │
-       ▼
-  OMDb API  ──────► Movie details (title, year, rating, plot, poster)
-       │
-       ▼
-  TMDB API  ──────► Trending movies, genres, high-res posters
-       │
-       ▼
-Watchmode API ───► Streaming sources (Netflix, Prime Video, Hotstar…)
-       │
-       ▼
-   UI renders cards with all combined information
+User searches "Inception"
+         │
+         ├──► OMDb API       → Title, Rating, Plot, Cast, Poster
+         │
+         ├──► TMDB API       → HD Poster, Genre tags, Popularity score
+         │
+         └──► Watchmode API  → Netflix / Prime / Hotstar availability
+                                        │
+                              Rendered as a Movie Card in the UI
 ```
 
 ---
 
 ## 📌 Project Overview
 
-**Movie Explorer** is a feature-rich web application that lets users search, filter, and sort movies in real time using data fetched from public movie APIs. The app provides detailed information about movies — including ratings, genres, release year, cast, and streaming availability — all in a clean, responsive interface.
+**Movie Explorer** fetches and displays real-time movie data using three public APIs. It implements search, filtering, and sorting entirely with JavaScript Array HOFs (`filter`, `map`, `sort`, `find`, `reduce`) — no `for`/`while` loops.
 
 ---
 
@@ -60,21 +55,20 @@ Watchmode API ───► Streaming sources (Netflix, Prime Video, Hotstar…)
 ### 1. 🎥 OMDb API — Open Movie Database
 - **Base URL:** `https://www.omdbapi.com/`
 - **Docs:** [omdbapi.com](https://www.omdbapi.com/)
-- **Auth:** Free API key (register at omdbapi.com)
+- **Auth:** Free API key
 
-| Endpoint | Usage |
-|----------|-------|
-| `?s={title}&apikey={key}` | Search movies by title (returns list) |
-| `?i={imdbID}&apikey={key}` | Fetch full details by IMDb ID |
-| `?t={title}&y={year}&apikey={key}` | Fetch a specific movie by exact title |
+| Endpoint | Purpose |
+|----------|---------|
+| `?s={title}&apikey={key}` | Search movies by title |
+| `?i={imdbID}&apikey={key}` | Full details by IMDb ID |
+| `?t={title}&y={year}&apikey={key}` | Movie by exact title + year |
 
-**Data provided:** Title, Year, Rated, Genre, Director, Actors, Plot, IMDb Rating, Poster URL, Awards
+**Returns:** Title, Year, Genre, Director, Actors, Plot, IMDb Rating, Poster URL, Awards
 
 ```js
-// Example fetch
-const res = await fetch(`https://www.omdbapi.com/?s=Inception&apikey=${OMDB_KEY}`);
+const res  = await fetch(`https://www.omdbapi.com/?s=Inception&apikey=${OMDB_KEY}`);
 const data = await res.json();
-// data.Search → array of movie results
+// data.Search → array of matching movies
 ```
 
 ---
@@ -82,26 +76,23 @@ const data = await res.json();
 ### 2. 🎞️ TMDB API — The Movie Database
 - **Base URL:** `https://api.themoviedb.org/3/`
 - **Docs:** [developer.themoviedb.org](https://developer.themoviedb.org/docs/getting-started)
-- **Auth:** Bearer Token (free account at themoviedb.org)
+- **Auth:** Bearer Token (free account)
 
-| Endpoint | Usage |
-|----------|-------|
-| `trending/movie/week` | Get trending movies this week |
-| `movie/popular` | Get currently popular movies |
-| `genre/movie/list` | Get all genre IDs and names |
-| `search/movie?query={title}` | Search movies by name |
-| `movie/{id}` | Full movie details by TMDB ID |
+| Endpoint | Purpose |
+|----------|---------|
+| `trending/movie/week` | Trending movies this week |
+| `movie/popular` | Currently popular movies |
+| `genre/movie/list` | All genre IDs and names |
+| `search/movie?query={title}` | Search by name |
 
-**Data provided:** Poster & backdrop images, genres array, vote average, popularity score, overview
+**Returns:** HD Poster paths, Backdrop images, Genre list, Vote average, Popularity
 
 ```js
-// Example fetch
-const res = await fetch(`https://api.themoviedb.org/3/trending/movie/week`, {
+const res  = await fetch(`https://api.themoviedb.org/3/trending/movie/week`, {
   headers: { Authorization: `Bearer ${TMDB_KEY}` }
 });
 const data = await res.json();
-// data.results → array of trending movies
-// Poster image: `https://image.tmdb.org/t/p/w500${data.results[0].poster_path}`
+// Poster: `https://image.tmdb.org/t/p/w500` + data.results[0].poster_path
 ```
 
 ---
@@ -109,66 +100,62 @@ const data = await res.json();
 ### 3. 📺 Watchmode API — Streaming Availability
 - **Base URL:** `https://api.watchmode.com/v1/`
 - **Docs:** [api.watchmode.com](https://api.watchmode.com/)
-- **Auth:** Free API key (register at watchmode.com)
+- **Auth:** Free API key
 
-| Endpoint | Usage |
-|----------|-------|
-| `search/?search_field=name&search_value={title}` | Find a title's Watchmode ID |
-| `title/{id}/sources/` | Get streaming platforms for a title |
+| Endpoint | Purpose |
+|----------|---------|
+| `search/?search_field=name&search_value={title}` | Get Watchmode title ID |
+| `title/{id}/sources/` | Streaming platforms for that title |
 
-**Data provided:** Source name (Netflix, Prime Video, Hotstar), type (subscription/free/rent/buy), web URL
+**Returns:** Platform name (Netflix, Prime, Hotstar), type (sub/free/rent/buy), direct URL
 
 ```js
-// Example fetch
-const res = await fetch(
-  `https://api.watchmode.com/v1/title/${watchmodeId}/sources/?apiKey=${WATCHMODE_KEY}`
-);
+const res     = await fetch(`https://api.watchmode.com/v1/title/${id}/sources/?apiKey=${WATCHMODE_KEY}`);
 const sources = await res.json();
-// sources → [{name: "Netflix", type: "sub", web_url: "..."}]
+// [{name:"Netflix", type:"sub", web_url:"..."}]
 ```
 
 ---
 
-### API Summary Table
+### API Quick Reference
 
-| API | Free Tier Limit | Key Data Used |
-|-----|----------------|---------------|
+| API | Free Limit | Primary Data |
+|-----|-----------|-------------|
 | OMDb | 1,000 req/day | Title, Rating, Plot, Poster |
-| TMDB | ~40 req/10 sec | Trending, Genres, HD Posters |
+| TMDB | ~40 req/10 sec | Trending, Genres, HD Images |
 | Watchmode | 1,000 req/month | Streaming platform sources |
 
 ---
 
-## ✨ Planned Features
+## ✨ Features
 
-### Core Features (Milestones 2 & 3)
-- 🔍 **Search** — Real-time movie search using Array HOFs (`filter`, `find`)
-- 🎭 **Filter by Genre** — Filter results by genre using `.filter()`
-- 📊 **Sort** — Sort movies by rating, release year, or title using `.sort()`
-- ❤️ **Favorites** — Like/save movies to a personal list (stored in LocalStorage)
-- 🌙 **Dark / Light Mode** — Theme toggle with preference saved in LocalStorage
-- 📡 **Streaming Info** — Show which platforms each movie is available on
+### Core
+- 🔍 **Search** — real-time movie search (`Array.filter`)
+- 🎭 **Filter by Genre / Year** — (`Array.filter`)
+- 📊 **Sort** — by rating, year, or title (`Array.sort`)
+- ❤️ **Favourites** — save movies to a watchlist (LocalStorage)
+- 🌙 **Dark / Light Mode** — theme toggle (LocalStorage)
+- 📡 **Streaming Info** — see which platforms carry each title
 
-### Bonus Features (Optional)
-- ⏳ **Debouncing** — Prevents excessive API calls on each keystroke in the search bar
-- 📄 **Pagination** — Splits large result sets into pages
-- 💾 **Local Storage** — Persists favorites and dark mode preference across sessions
-- 🔄 **Loading Indicators** — Spinner shown during API fetch calls
+### Bonus
+- ⏳ **Debouncing** on search input — reduces unnecessary API calls
+- 📄 **Pagination** — for large result sets
+- 🔄 **Loading Spinner** — shown during API fetch
 
 ---
 
-## 🛠️ Technologies Used
+## 🛠️ Tech Stack
 
 | Technology | Role |
 |-----------|------|
-| HTML5 | Page structure and semantics |
+| HTML5 | Page structure |
 | CSS3 | Styling, responsive layout, dark/light themes |
-| Vanilla JavaScript (ES6+) | Logic, API calls (`fetch`), Array HOFs |
-| OMDb API | Movie data source |
-| TMDB API | Trending movies & poster images |
+| Vanilla JavaScript (ES6+) | Logic, `fetch`, Array HOFs |
+| OMDb API | Movie metadata |
+| TMDB API | Trending data + HD posters |
 | Watchmode API | Streaming availability |
 
-> 💡 No frameworks or build tools — pure HTML/CSS/JS as required.
+> 💡 Pure HTML/CSS/JS — no frameworks or build tools.
 
 ---
 
@@ -176,87 +163,77 @@ const sources = await res.json();
 
 ```
 The_movie/
-├── index.html          # Main HTML page
-├── style.css           # Stylesheet (themes, responsive design)
-├── app.js              # Core JavaScript (API integration, HOFs, UI)
-├── README.md           # Project documentation
-└── assets/             # Icons, images (if any)
+├── index.html      # Main HTML page
+├── style.css       # Stylesheet (themes, responsive layout)
+├── app.js          # API calls, HOFs, UI rendering
+├── README.md       # Project documentation
+└── assets/         # Icons and static images
 ```
 
 ---
 
-## 🚀 How to Run the Project
+## 🚀 Setup & Run
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/<your-username>/The_movie.git
-   cd The_movie
-   ```
+```bash
+# 1. Clone the repo
+git clone https://github.com/<your-username>/The_movie.git
+cd The_movie
 
-2. **Add your API keys**  
-   Open `app.js` and replace the placeholder values:
-   ```js
-   const OMDB_KEY    = "your_omdb_api_key";
-   const TMDB_KEY    = "your_tmdb_api_key";
-   const WATCHMODE_KEY = "your_watchmode_api_key";
-   ```
+# 2. Add your API keys in app.js
+const OMDB_KEY      = "your_omdb_key";
+const TMDB_KEY      = "your_tmdb_bearer_token";
+const WATCHMODE_KEY = "your_watchmode_key";
 
-3. **Open in browser**  
-   Simply open `index.html` in any modern browser — no build step needed.
-   ```bash
-   open index.html   # macOS
-   # or drag-and-drop into Google Chrome
-   ```
+# 3. Open in browser — no build step needed
+open index.html
+```
 
 ---
 
 ## 📅 Milestone Progress
 
-| Milestone | Description | Deadline | Status |
-|-----------|-------------|----------|--------|
-| ✅ **M1** | Project Setup, GitHub repo, README | 23rd March | Done |
-| 🔄 **M2** | API Integration, Responsive UI | 1st April | In Progress |
-| ⬜ **M3** | Search, Filter, Sort (using HOFs) | 8th April | Upcoming |
-| ⬜ **M4** | Documentation, Refactor, Deployment | 10th April | Upcoming |
+| Milestone | Goal | Deadline | Status |
+|-----------|------|----------|--------|
+| ✅ M1 | Project setup, GitHub repo, README | 23 Mar | **Done** |
+| 🔄 M2 | API integration, responsive UI | 1 Apr | In Progress |
+| ⬜ M3 | Search / Filter / Sort (HOFs) | 8 Apr | Upcoming |
+| ⬜ M4 | Refactor, deploy, final docs | 10 Apr | Upcoming |
 
 ---
 
-## 📋 Array HOFs Usage Plan
+## 📋 Array HOFs Plan
 
-| Feature | HOF Used |
-|---------|----------|
-| Search movies by title | `Array.filter()` |
-| Filter by genre | `Array.filter()` |
-| Sort by rating / year | `Array.sort()` |
-| Map API data to UI cards | `Array.map()` |
-| Find a specific movie | `Array.find()` |
-| Count favorites | `Array.reduce()` |
+| Feature | HOF |
+|---------|-----|
+| Search by title | `filter()` |
+| Filter by genre/year | `filter()` |
+| Sort by rating/date | `sort()` |
+| Render movie cards | `map()` |
+| Find a specific movie | `find()` |
+| Count favourites | `reduce()` |
 
-> ⚠️ Traditional `for` / `while` loops will **not** be used for these operations.
+> ⚠️ No `for` or `while` loops used for these operations.
 
 ---
 
-## ✅ Best Practices Followed
+## ✅ Best Practices
 
-- Meaningful variable and function names
-- Modular code — API logic, UI rendering, and event handling separated
-- Error handling for API calls (network errors, empty results)
-- Responsive design tested across mobile, tablet, and desktop
-- Regular commits with descriptive messages
-- LocalStorage for persistence (favorites, theme)
-- Debouncing on the search input for performance
+- Modular code — API, UI, and event logic separated
+- Descriptive variable and function names
+- Error handling for all API calls
+- Responsive across mobile, tablet, and desktop
+- Regular, meaningful git commits
+- DRY principle — reusable functions throughout
 
 ---
 
 ## 🔗 Deployment
 
-The project will be deployed using **GitHub Pages** / **Netlify** after Milestone 4.  
-Live link will be added here upon deployment.
+Will be deployed via **GitHub Pages / Netlify** after Milestone 4.  
+Live link: _(to be added)_
 
 ---
 
 ## 👤 Author
 
-**Ayush Kumar**  
-Newton School of Technology | ADY Patil University, Pune  
-Academic Year 2025–26
+**Ayush Kumar** — Newton School of Technology, ADY Patil University, Pune
