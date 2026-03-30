@@ -54,7 +54,7 @@ cinevault/
 ## Setup
 
 1. Clone the repository
-   git clone https://github.com/Shivala-08/cinevault.git
+   git clone https://github.com/Ayush-840/The_movie
 
 2. Get API key from OMDb
 
