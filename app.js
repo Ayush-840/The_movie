@@ -72,6 +72,24 @@ const MOCK_MOVIES = [
         poster: 'https://image.tmdb.org/t/p/w500/rKvC73aCoFp68m9n7AKqGUEq67c.jpg',
         genres: ['Action', 'Adventure', 'Comedy'],
         plot: 'A middle-aged Chinese immigrant is swept up into an insane adventure in which she alone can save existence by exploring other universes and connecting with the lives she could have led.'
+    },
+    {
+        id: 'mock-6',
+        title: 'Pushpa: The Rise - Part 1',
+        year: '2021',
+        rating: '7.6',
+        poster: 'https://image.tmdb.org/t/p/w500/yj9EcvO7S6hlK9K7L6vYen0xGIs.jpg',
+        genres: ['Action', 'Crime', 'Drama'],
+        plot: 'Violence erupts between red sandalwood smugglers and the police who are tasked with taking down their organization in the Seshachalam forests of South India.'
+    },
+    {
+        id: 'mock-7',
+        title: 'Pushpa 2: The Rule',
+        year: '2024',
+        rating: '8.5',
+        poster: 'https://image.tmdb.org/t/p/w500/fR9nB6Wk9V4V6Z6jR5zJ4L6m3Z.jpg',
+        genres: ['Action', 'Crime', 'Drama'],
+        plot: 'The clash continues between Pushpa Raj and Bhanwar Singh Shekhawat in this epic sequel.'
     }
 ];
 
