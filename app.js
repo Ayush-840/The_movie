@@ -13,6 +13,7 @@
 // Replace these with your own API keys as per README.md
 const OMDB_API_KEY = 'your_omdb_key'; // Get yours at omdbapi.com
 const TMDB_BEARER_TOKEN = 'your_tmdb_bearer_token'; // Get yours at developer.themoviedb.org
+const WATCHMODE_API_KEY = 'your_watchmode_key'; // Get yours at api.watchmode.com
 
 // --- APP STATE ---
 let state = {
@@ -139,7 +140,7 @@ function setupEventListeners() {
 
 // Fetch Genres from TMDB
 async function fetchGenres() {
-    if (OMDB_API_KEY === 'your_omdb_key' || TMDB_BEARER_TOKEN === 'your_tmdb_bearer_token') {
+    if (OMDB_API_KEY === 'your_omdb_key' || TMDB_BEARER_TOKEN === 'your_tmdb_bearer_token' || WATCHMODE_API_KEY === 'your_watchmode_key') {
         state.isMock = true;
         // Populate some hardcoded genres for filtering
         const mockGenres = [
@@ -253,6 +254,33 @@ async function fetchMovieDetail(imdbID) {
     const response = await fetch(`https://www.omdbapi.com/?i=${imdbID}&apikey=${OMDB_API_KEY}`);
     const data = await response.json();
     return formatOMDBMovie(data);
+}
+
+// Fetch Streaming Sources from Watchmode
+async function fetchWatchmodeSources(title) {
+    if (state.isMock) {
+        return [
+            { name: 'Netflix', type: 'sub', web_url: '#' },
+            { name: 'Disney+', type: 'sub', web_url: '#' },
+            { name: 'Amazon Prime', type: 'sub', web_url: '#' }
+        ];
+    }
+
+    try {
+        // Multi-step: Search for ID, then get sources
+        const searchRes = await fetch(`https://api.watchmode.com/v1/search/?apiKey=${WATCHMODE_API_KEY}&search_field=name&search_value=${encodeURIComponent(title)}&types=movie`);
+        const searchData = await searchRes.json();
+        
+        if (searchData.title_results && searchData.title_results.length > 0) {
+            const wmId = searchData.title_results[0].id;
+            const sourceRes = await fetch(`https://api.watchmode.com/v1/title/${wmId}/sources/?apiKey=${WATCHMODE_API_KEY}`);
+            return await sourceRes.json();
+        }
+        return [];
+    } catch (error) {
+        console.error('Watchmode error:', error);
+        return [];
+    }
 }
 
 // --- DATA FORMATTERS ---
@@ -384,7 +412,7 @@ function renderMovies() {
     movieCards.forEach(card => elements.movieGrid.appendChild(card));
 }
 
-function showMovieDetails(movie) {
+async function showMovieDetails(movie) {
     elements.modalBody.innerHTML = `
         <div class="modal-body-content">
             <div class="modal-poster">
@@ -400,6 +428,14 @@ function showMovieDetails(movie) {
                 <div class="modal-plot" style="margin: 1.5rem 0;">
                     <p>${movie.plot || 'No plot available.'}</p>
                 </div>
+                
+                <div id="streaming-sources" style="margin-bottom: 2rem;">
+                    <p><strong>Available on:</strong></p>
+                    <div class="loader-container" style="height: 50px;">
+                        <div class="loader" style="width: 24px; height: 24px; border-width: 3px;"></div>
+                    </div>
+                </div>
+
                 <div class="watchlist-action">
                     <button id="modal-watchlist-btn" class="search-box button" style="width: auto;">
                         ${state.watchlist.some(m => m.id === movie.id) ? 'Remove from Watchlist' : 'Add to Watchlist'}
@@ -410,12 +446,40 @@ function showMovieDetails(movie) {
     `;
     elements.modal.style.display = 'block';
 
+    // Fetch and display streaming sources
+    const sources = await fetchWatchmodeSources(movie.title);
+    renderStreamingSources(sources);
+
     const modalWatchBtn = document.getElementById('modal-watchlist-btn');
     modalWatchBtn.onclick = () => {
         toggleWatchlist(movie);
         modalWatchBtn.textContent = state.watchlist.some(m => m.id === movie.id) ? 'Remove from Watchlist' : 'Add to Watchlist';
         renderMovies(); // Update background
     };
+}
+
+function renderStreamingSources(sources) {
+    const container = document.getElementById('streaming-sources');
+    if (!sources || sources.length === 0) {
+        container.innerHTML = '<p><strong>Available on:</strong> Not available for streaming.</p>';
+        return;
+    }
+
+    // Use filter + map (HOF) to show unique sources
+    const uniqueSources = sources.filter((source, index, self) => 
+        index === self.findIndex((s) => s.name === source.name)
+    );
+
+    container.innerHTML = `
+        <p><strong>Available on:</strong></p>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem;">
+            ${uniqueSources.map(s => `
+                <span style="background: var(--accent-color); color: #000; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                    ${s.name}
+                </span>
+            `).join('')}
+        </div>
+    `;
 }
 
 // --- UTILS ---
