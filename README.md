@@ -19,6 +19,7 @@ https://www.omdbapi.com/
 * Display movie poster, title, year, and rating
 * Add and remove movies from watchlist
 * Watchlist stored using localStorage
+*| M2 | API integration + responsive UI | 1 Apr | ✅ Done |
 * Empty state messages for no results
 
 ---
