@@ -1,133 +1,142 @@
-// 🔑 API KEY
-const API_KEY = "a35e86be";
+const omdbKey = "a35e86be";
 
-// 🧠 Global Data
-let currentMovies = [];
-let watchlist = JSON.parse(localStorage.getItem("watchlist")) || [];
+let allSearchResults = [];
+let savedMovies = JSON.parse(localStorage.getItem("mySavedMovies")) || [];
 
-// 🚀 Fetch Movies
-async function fetchMovies(query) {
+async function loadMoviesFromApi(query) {
+    const listDisplay = document.getElementById("movie-display");
+
     if (!query) {
-        document.getElementById("movies").innerHTML = "🔍 Start typing to search movies...";
+        listDisplay.innerHTML = "🔍 Type something to find movies...";
         return;
     }
 
-    document.getElementById("movies").innerHTML = "⏳ Loading...";
+    listDisplay.innerHTML = "⏳ Searching...";
 
     try {
-        const res = await fetch(
-            `https://www.omdbapi.com/?apikey=${API_KEY}&s=${query}`
+        const response = await fetch(
+            `https://www.omdbapi.com/?apikey=${omdbKey}&s=${query}`
         );
 
-        const data = await res.json();
+        const data = await response.json();
 
         if (data.Search) {
-            currentMovies = data.Search;
-            displayMovies(currentMovies);
+            allSearchResults = data.Search;
+            renderMoviesToScreen(allSearchResults);
         } else {
-            document.getElementById("movies").innerHTML = "❌ No movies found";
+            listDisplay.innerHTML = "❌ No movies found for this search";
         }
     } catch (error) {
-        document.getElementById("movies").innerHTML = "⚠️ Error fetching data";
+        listDisplay.innerHTML = "⚠️ Something went wrong while fetching data";
     }
 }
 
-// 🎯 Display Movies (forEach used correctly)
-function displayMovies(movies) {
-    const container = document.getElementById("movies");
+function renderMoviesToScreen(movies) {
+    const container = document.getElementById("movie-display");
     container.innerHTML = "";
 
-    movies.forEach(movie => {
-        const isAdded = watchlist.find(m => m.imdbID === movie.imdbID);
-
-        const poster = movie.Poster !== "N/A"
-            ? movie.Poster
-            : "https://via.placeholder.com/100x150?text=No+Image";
-
-        const div = document.createElement("div");
-
-        div.innerHTML = `
-            <h3>${movie.Title}</h3>
-            <img src="${poster}" width="100"/>
-            <p>📅 ${movie.Year}</p>
-            <button onclick="toggleWatchlist('${movie.imdbID}')">
-                ${isAdded ? "❌ Remove" : "❤️ Add"}
-            </button>
-        `;
-
-        container.appendChild(div);
-    });
-}
-
-// ❤️ Toggle Watchlist
-function toggleWatchlist(id) {
-    const exists = watchlist.find(m => m.imdbID === id);
-
-    if (exists) {
-        watchlist = watchlist.filter(m => m.imdbID !== id);
-    } else {
-        const movie = currentMovies.find(m => m.imdbID === id);
-        if (movie) watchlist.push(movie);
-    }
-
-    // 💾 Save
-    localStorage.setItem("watchlist", JSON.stringify(watchlist));
-
-    renderWatchlist();
-    displayMovies(currentMovies);
-}
-
-// 📌 Render Watchlist
-function renderWatchlist() {
-    const saved = document.getElementById("saved");
-    saved.innerHTML = "";
-
-    if (watchlist.length === 0) {
-        saved.innerHTML = "📭 No saved movies";
+    if (movies.length === 0) {
+        container.innerHTML = "📭 Use the search box above to find movies...";
         return;
     }
 
-    watchlist.forEach(movie => {
-        const div = document.createElement("div");
+    movies.forEach(movie => {
+        const isAlreadySaved = savedMovies.find(item => item.imdbID === movie.imdbID);
 
-        div.innerHTML = `
-            <p>${movie.Title}</p>
-            <button onclick="toggleWatchlist('${movie.imdbID}')">
-                ❌ Remove
+        const posterUrl = movie.Poster !== "N/A"
+            ? movie.Poster
+            : "https://via.placeholder.com/200x300?text=No+Image";
+
+        const card = document.createElement("div");
+        card.className = "single-movie-card";
+
+        card.innerHTML = `
+            <img src="${posterUrl}" alt="${movie.Title}"/>
+            <h3>${movie.Title}</h3>
+            <p><i class="ph ph-calendar"></i> ${movie.Year}</p>
+            <button onclick="handleSaveToggle('${movie.imdbID}')">
+                ${isAlreadySaved ? '<i class="ph ph-minus-circle"></i> Remove' : '<i class="ph ph-heart-straight"></i> Save'}
             </button>
         `;
 
-        saved.appendChild(div);
+        container.appendChild(card);
     });
 }
 
-// 🔃 SORT (by Year)
-function sortMoviesByYear() {
-    const sorted = [...currentMovies].sort((a, b) => b.Year - a.Year);
-    displayMovies(sorted);
+function handleSaveToggle(id) {
+    const existingMovie = savedMovies.find(item => item.imdbID === id);
+
+    if (existingMovie) {
+        savedMovies = savedMovies.filter(item => item.imdbID !== id);
+    } else {
+        const movieToSave = allSearchResults.find(item => item.imdbID === id);
+        if (movieToSave) savedMovies.push(movieToSave);
+    }
+
+    localStorage.setItem("mySavedMovies", JSON.stringify(savedMovies));
+
+    refreshSavedList();
+    renderMoviesToScreen(allSearchResults);
 }
 
-// 🎯 FILTER (Latest Movies)
-function filterLatestMovies() {
-    const filtered = currentMovies.filter(movie => movie.Year >= 2015);
-    displayMovies(filtered);
+function refreshSavedList() {
+    const savedArea = document.getElementById("saved-items");
+    savedArea.innerHTML = "";
+
+    if (savedMovies.length === 0) {
+        savedArea.innerHTML = `
+            <div style="text-align: center; color: var(--text-dim); padding: 20px;">
+                <i class="ph ph-mask-happy" style="font-size: 2rem; opacity: 0.5;"></i>
+                <p>Your list is currently empty</p>
+            </div>`;
+        return;
+    }
+
+    savedMovies.forEach(movie => {
+        const row = document.createElement("div");
+        row.className = "saved-movie-row";
+
+        row.innerHTML = `
+            <div>
+                <span>${movie.Title}</span>
+                <small>${movie.Year}</small>
+            </div>
+            <button onclick="handleSaveToggle('${movie.imdbID}')">
+                <i class="ph ph-trash"></i>
+            </button>
+        `;
+
+        savedArea.appendChild(row);
+    });
 }
 
-// ⚡ Debounce
-function debounce(func, delay) {
-    let timer;
+function sortByYear() {
+    const sortedList = [...allSearchResults].sort((a, b) => b.Year - a.Year);
+    renderMoviesToScreen(sortedList);
+}
+
+function filterLatest() {
+    const latestOnly = allSearchResults.filter(movie => movie.Year >= 2015);
+    renderMoviesToScreen(latestOnly);
+}
+
+function resetList() {
+    renderMoviesToScreen(allSearchResults);
+}
+
+function createDelayedSearch(action, delayTime) {
+    let timeout;
     return function (...args) {
-        clearTimeout(timer);
-        timer = setTimeout(() => func(...args), delay);
+        clearTimeout(timeout);
+        timeout = setTimeout(() => action(...args), delayTime);
     };
 }
 
-const optimizedSearch = debounce(fetchMovies, 500);
+const searchWithDelay = createDelayedSearch(loadMoviesFromApi, 500);
 
-// 🎯 Event Listener
-document.getElementById("search").addEventListener("input", (e) => {
-    optimizedSearch(e.target.value);
+document.getElementById("movie-search").addEventListener("input", (event) => {
+    searchWithDelay(event.target.value);
 });
 
-// 🚀 Initial Load
-renderWatchlist();
+refreshSavedList();
+renderMoviesToScreen(allSearchResults);
