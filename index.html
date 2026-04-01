@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎬 CineVault | Discover. Save. Watch.</title>
+    <title>🎬 MovieHub | Discover. Save. Watch.</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
@@ -12,7 +12,7 @@
 <body data-theme="dark">
 
     <header>
-        <a href="#" class="logo">🎬 CineVault</a>
+        <a href="#" class="logo">🎬 MovieHub</a>
         <nav>
             <a href="#" class="active">Home</a>
             <a href="#" onclick="toggleWatchlist()">Watchlist</a>
@@ -27,8 +27,16 @@
     <section class="hero">
         <h1>Discover. Save. Watch.</h1>
         <div class="search-box">
+            <i class="ph ph-magnifying-glass search-icon"></i>
             <input type="text" id="search-input" placeholder="Search for movies, series & actors...">
-            <button class="btn-primary" onclick="handleSearch()">Search</button>
+            <button class="btn-primary" onclick="window.handleSearch()">Search</button>
+        </div>
+        <div class="trending-tags">
+            <span>Try searching for:</span>
+            <button onclick="window.quickSearch('Avengers')">Avengers</button>
+            <button onclick="window.quickSearch('Batman')">Batman</button>
+            <button onclick="window.quickSearch('2025')">2025</button>
+            <button onclick="window.quickSearch('Horror')">Horror</button>
         </div>
     </section>
 

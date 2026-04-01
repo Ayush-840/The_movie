@@ -1,8 +1,8 @@
-# CineVault — Movie Watchlist App
+# MovieHub — Movie Watchlist App
 
 ## Overview
 
-CineVault is a movie search and watchlist web application built using JavaScript. Users can search for movies, view details, and save them to a personal watchlist.
+MovieHub is a movie search and watchlist web application built using JavaScript. Users can search for movies, view details, and save them to a personal watchlist.
 
 ---
 

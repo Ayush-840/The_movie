@@ -10,8 +10,8 @@ const CONFIG = {
         '🔥 New Arrivals', 'All', 'Action', 'Comedy', 'Drama', 'Horror', 'Sci-Fi', 'Thriller', 'Romance', 'Animation'
     ],
     STORAGE_KEYS: {
-        WATCHLIST: 'cinevault_watchlist',
-        THEME: 'cinevault_theme'
+        WATCHLIST: 'moviehub_watchlist',
+        THEME: 'moviehub_theme'
     }
 };
 

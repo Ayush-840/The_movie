@@ -3,12 +3,14 @@
     let currentPage = 1;
     let currentResults = [];
     let activeGenre = 'All';
+    let searchTimeout = null;
 
     async function init() {
         window.UI.renderGenrePills(window.CONFIG.GENRES, document.getElementById('genre-pills'), activeGenre);
         loadTrending();
         renderWatchlistItems();
         setupTheme();
+        setupSearchListeners();
     }
 
     async function loadTrending() {
@@ -37,6 +39,28 @@
                 document.getElementById('movie-grid').innerHTML = `<p class="no-results">No movies found for "${query}"</p>`;
             }
         }
+    };
+
+    // 🎯 Debounced Live Search
+    function setupSearchListeners() {
+        const input = document.getElementById('search-input');
+        if (!input) return;
+
+        input.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            const query = e.target.value.trim();
+            if (query.length > 2) {
+                searchTimeout = setTimeout(() => window.handleSearch(), 500);
+            }
+        });
+    }
+
+    // 🎯 Quick Search Tags
+    window.quickSearch = (keyword) => {
+        const input = document.getElementById('search-input');
+        input.value = keyword;
+        window.handleSearch();
+        window.scrollTo({ top: 300, behavior: 'smooth' });
     };
 
     // 🎯 Genre Filter Logic
