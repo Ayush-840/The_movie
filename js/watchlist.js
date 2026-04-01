@@ -1,12 +1,10 @@
-import CONFIG from './config.js';
-
-export const Watchlist = {
+const Watchlist = {
     get() {
-        return JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.WATCHLIST)) || [];
+        return JSON.parse(localStorage.getItem(window.CONFIG.STORAGE_KEYS.WATCHLIST)) || [];
     },
 
     save(watchlist) {
-        localStorage.setItem(CONFIG.STORAGE_KEYS.WATCHLIST, JSON.stringify(watchlist));
+        localStorage.setItem(window.CONFIG.STORAGE_KEYS.WATCHLIST, JSON.stringify(watchlist));
     },
 
     add(movie) {
@@ -46,3 +44,5 @@ export const Watchlist = {
         }
     }
 };
+
+window.Watchlist = Watchlist;

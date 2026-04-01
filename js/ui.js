@@ -1,13 +1,15 @@
-export const UI = {
+const UI = {
     renderMovieCards(movies, container) {
         container.innerHTML = movies.map(movie => this.createMovieCard(movie)).join('');
     },
 
     createMovieCard(movie) {
         const poster = movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/300x450?text=No+Poster';
+        const isLatest = parseInt(movie.Year) >= 2024;
         return `
             <div class="movie-card" data-id="${movie.imdbID}">
                 <div class="year-badge">${movie.Year}</div>
+                ${isLatest ? '<div class="featured-badge">FEATURED</div>' : ''}
                 <img src="${poster}" alt="${movie.Title}" loading="lazy">
                 <div class="card-overlay">
                     <h3 class="card-title" title="${movie.Title}">${movie.Title}</h3>
@@ -51,3 +53,5 @@ export const UI = {
         `).join('');
     }
 };
+
+window.UI = UI;

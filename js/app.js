@@ -1,124 +1,159 @@
-import CONFIG from './config.js';
-import { MovieAPI } from './api.js';
-import { UI } from './ui.js';
-import { Watchlist } from './watchlist.js';
+(function() {
+    let currentQuery = 'Avatar';
+    let currentPage = 1;
+    let currentResults = [];
+    let activeGenre = 'All';
 
-let currentQuery = 'Avatar';
-let currentPage = 1;
-let currentResults = [];
-let activeGenre = 'All';
-
-async function init() {
-    UI.renderGenrePills(CONFIG.GENRES, document.getElementById('genre-pills'), activeGenre);
-    loadTrending();
-    renderWatchlistItems();
-    setupTheme();
-}
-
-async function loadTrending() {
-    const data = await MovieAPI.getTrending();
-    if (data.Search) {
-        currentResults = data.Search;
-        UI.renderMovieCards(currentResults, document.getElementById('movie-grid'));
+    async function init() {
+        window.UI.renderGenrePills(window.CONFIG.GENRES, document.getElementById('genre-pills'), activeGenre);
+        loadTrending();
+        renderWatchlistItems();
+        setupTheme();
     }
-}
 
-// 🎯 Search Orchestration
-window.handleSearch = async () => {
-    const input = document.getElementById('search-input');
-    const query = input.value.trim();
-    if (query) {
-        currentQuery = query;
-        currentPage = 1;
-        UI.renderSkeletons(document.getElementById('movie-grid'));
-        const data = await MovieAPI.searchMovies(currentQuery, currentPage);
-        if (data.Search) {
-            currentResults = data.Search;
-            UI.renderMovieCards(currentResults, document.getElementById('movie-grid'));
-            document.getElementById('page-num').textContent = currentPage;
-        } else {
-            document.getElementById('movie-grid').innerHTML = `<p class="no-results">No stories found matching "${query}"</p>`;
+    async function loadTrending() {
+        window.UI.renderSkeletons(document.getElementById('movie-grid'));
+        const movies = await window.MovieAPI.getTrending();
+        if (movies && movies.length > 0) {
+            currentResults = movies;
+            window.UI.renderMovieCards(currentResults, document.getElementById('movie-grid'));
         }
     }
-};
 
-// 🎯 Pagination
-window.loadMore = async () => {
-    currentPage++;
-    const data = await MovieAPI.searchMovies(currentQuery, currentPage);
-    if (data.Search) {
-        currentResults = [...currentResults, ...data.Search];
-        UI.renderMovieCards(currentResults, document.getElementById('movie-grid'));
-        document.getElementById('page-num').textContent = currentPage;
-    }
-};
+    // 🎯 Search Orchestration
+    window.handleSearch = async () => {
+        const input = document.getElementById('search-input');
+        const query = input.value.trim();
+        if (query) {
+            currentQuery = query;
+            currentPage = 1;
+            window.UI.renderSkeletons(document.getElementById('movie-grid'));
+            const data = await window.MovieAPI.searchMovies(currentQuery, currentPage);
+            if (data.Search) {
+                currentResults = data.Search;
+                window.UI.renderMovieCards(currentResults, document.getElementById('movie-grid'));
+                document.getElementById('page-num').textContent = currentPage;
+            } else {
+                document.getElementById('movie-grid').innerHTML = `<p class="no-results">No movies found for "${query}"</p>`;
+            }
+        }
+    };
 
-// 🎯 Watchlist Toggle
-window.handleWatchlistToggle = (id) => {
-    const movie = currentResults.find(m => m.imdbID === id);
-    if (!movie) return;
+    // 🎯 Genre Filter Logic
+    window.handleGenreChange = async (genre) => {
+        activeGenre = genre;
+        window.UI.renderGenrePills(window.CONFIG.GENRES, document.getElementById('genre-pills'), activeGenre);
+        window.UI.renderSkeletons(document.getElementById('movie-grid'));
 
-    const action = Watchlist.toggle(movie);
-    if (action === 'added') {
-        UI.showToast(`"${movie.Title}" added to watchlist`, 'success');
-    } else if (action === 'removed') {
-        UI.showToast(`"${movie.Title}" removed from watchlist`, 'info');
-    }
-    renderWatchlistItems();
-};
+        if (genre === '🔥 New Arrivals') {
+            currentQuery = '2025';
+            currentPage = 1;
+            const data = await window.MovieAPI.searchMovies(currentQuery, currentPage);
+            currentResults = data.Search || [];
+        } else if (genre === 'All') {
+            const movies = await window.MovieAPI.getTrending();
+            currentResults = movies;
+        } else {
+            // Remove the icon for searching (e.g. Action instead of Action icon)
+            const cleanGenre = genre.replace(/[^a-zA-Z]/g, '');
+            currentPage = 1;
+            const data = await window.MovieAPI.searchMovies(cleanGenre, currentPage);
+            currentResults = data.Search || [];
+        }
+        
+        if (currentResults.length > 0) {
+            window.UI.renderMovieCards(currentResults, document.getElementById('movie-grid'));
+        } else {
+            document.getElementById('movie-grid').innerHTML = `<p class="no-results">Discovering ${genre} stories... Try another search!</p>`;
+        }
+    };
 
-window.toggleWatchlist = () => {
-    const panel = document.getElementById('watchlist-panel');
-    panel.classList.toggle('active');
-};
+    // 🎯 Sorting Logic (Client-Side)
+    window.handleSort = () => {
+        const sortType = document.getElementById('sort-select').value;
+        let sorted = [...currentResults];
 
-function renderWatchlistItems() {
-    const container = document.getElementById('watchlist-items');
-    const watchlist = Watchlist.get();
-    
-    if (watchlist.length === 0) {
-        container.innerHTML = `<p class="empty-msg">Your watchlist is empty.</p>`;
-        return;
-    }
+        if (sortType === 'year') {
+            sorted.sort((a, b) => parseInt(b.Year) - parseInt(a.Year));
+        } else if (sortType === 'title') {
+            sorted.sort((a, b) => a.Title.localeCompare(b.Title));
+        } else if (sortType === 'pop') {
+            // OMDB doesn't give popularity, so we just use the default order which is usually importance
+            sorted = [...currentResults];
+        }
 
-    container.innerHTML = watchlist.map(movie => `
-        <div class="watchlist-item">
-            <div class="item-info">
-                <span>${movie.Title}</span>
-                <small>${movie.Year}</small>
+        window.UI.renderMovieCards(sorted, document.getElementById('movie-grid'));
+    };
+
+    // 🎯 Pagination
+    window.loadMore = async () => {
+        currentPage++;
+        const data = await window.MovieAPI.searchMovies(currentQuery, currentPage);
+        if (data.Search) {
+            currentResults = [...currentResults, ...data.Search];
+            window.UI.renderMovieCards(currentResults, document.getElementById('movie-grid'));
+            document.getElementById('page-num').textContent = currentPage;
+        }
+    };
+
+    // 🎯 Watchlist Essentials
+    window.handleWatchlistToggle = (id) => {
+        const movie = currentResults.find(m => m.imdbID === id) || window.Watchlist.get().find(m => m.imdbID === id);
+        if (!movie) return;
+
+        const action = window.Watchlist.toggle(movie);
+        if (action === 'added') {
+            window.UI.showToast(`"${movie.Title}" added to watchlist`, 'success');
+        } else if (action === 'removed') {
+            window.UI.showToast(`"${movie.Title}" removed from watchlist`, 'info');
+        }
+        renderWatchlistItems();
+    };
+
+    window.toggleWatchlist = () => {
+        document.getElementById('watchlist-panel').classList.toggle('active');
+    };
+
+    function renderWatchlistItems() {
+        const container = document.getElementById('watchlist-items');
+        const watchlist = window.Watchlist.get();
+        if (watchlist.length === 0) {
+            container.innerHTML = `<p class="empty-msg">Your watchlist is empty.</p>`;
+            return;
+        }
+        container.innerHTML = watchlist.map(movie => `
+            <div class="watchlist-item">
+                <div class="item-info">
+                    <span>${movie.Title}</span>
+                    <small>${movie.Year}</small>
+                </div>
+                <button onclick="window.handleWatchlistToggle('${movie.imdbID}')"><i class="ph ph-trash"></i></button>
             </div>
-            <button onclick="window.handleWatchlistToggle('${movie.imdbID}')"><i class="ph ph-trash"></i></button>
-        </div>
-    `).join('');
-}
-
-// 🎯 Theme Support
-window.toggleTheme = () => {
-    const currentTheme = document.body.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    document.body.setAttribute('data-theme', newTheme);
-    document.getElementById('theme-btn').textContent = newTheme === 'dark' ? '🌙' : '☀️';
-    localStorage.setItem(CONFIG.STORAGE_KEYS.THEME, newTheme);
-};
-
-function setupTheme() {
-    const savedTheme = localStorage.getItem(CONFIG.STORAGE_KEYS.THEME) || 'dark';
-    document.body.setAttribute('data-theme', savedTheme);
-    document.getElementById('theme-btn').textContent = savedTheme === 'dark' ? '🌙' : '☀️';
-}
-
-// 🎯 Init Calls
-document.addEventListener('DOMContentLoaded', init);
-window.handleGenreChange = (genre) => {
-    activeGenre = genre;
-    UI.renderGenrePills(CONFIG.GENRES, document.getElementById('genre-pills'), activeGenre);
-    // In a real app we would filter the query or search by genre
-};
-
-window.showDetails = async (id) => {
-    UI.showToast('Fetching movie details...', 'info');
-    const movie = await MovieAPI.getMovieDetails(id);
-    if (movie) {
-        alert(`${movie.Title} (${movie.Year})\n\nPlot: ${movie.Plot}\n\nDirector: ${movie.Director}\n\nActors: ${movie.Actors}`);
+        `).join('');
     }
-};
+
+    // 🎯 UI & Theme
+    window.toggleTheme = () => {
+        const currentTheme = document.body.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.body.setAttribute('data-theme', newTheme);
+        document.getElementById('theme-btn').textContent = newTheme === 'dark' ? '🌙' : '☀️';
+        localStorage.setItem(window.CONFIG.STORAGE_KEYS.THEME, newTheme);
+    };
+
+    function setupTheme() {
+        const savedTheme = localStorage.getItem(window.CONFIG.STORAGE_KEYS.THEME) || 'dark';
+        document.body.setAttribute('data-theme', savedTheme);
+        document.getElementById('theme-btn').textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+    }
+
+    window.showDetails = async (id) => {
+        window.UI.showToast('Fetching movie details...', 'info');
+        const movie = await window.MovieAPI.getMovieDetails(id);
+        if (movie) {
+            alert(`${movie.Title} (${movie.Year})\n\nPlot: ${movie.Plot}\n\nActors: ${movie.Actors}`);
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', init);
+})();
