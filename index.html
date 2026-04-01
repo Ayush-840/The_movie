@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Explorer | Search, Discover, Watch</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dark-theme">
+    <header>
+        <nav class="container">
+            <div class="logo">
+                <i class="fas fa-film"></i>
+                <span>Movie Explorer</span>
+            </div>
+            <div class="nav-controls">
+                <button id="theme-toggle" aria-label="Toggle Dark/Light Mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <div class="watchlist-badge" id="watchlist-nav">
+                    <i class="fas fa-bookmark"></i>
+                    <span id="watchlist-count">0</span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <h1>Discover Your Next Favorite Movie</h1>
+            <p>Search thousands of movies, check ratings, and find where to stream them.</p>
+            
+            <div class="search-container">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="movie-search" placeholder="Search for a movie title...">
+                    <button id="search-btn">Search</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="filters-section">
+            <div class="filters-container">
+                <div class="filter-group">
+                    <label for="genre-filter">Genre</label>
+                    <select id="genre-filter">
+                        <option value="all">All Genres</option>
+                        <!-- Genres will be populated dynamically -->
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="sort-filter">Sort By</label>
+                    <select id="sort-filter">
+                        <option value="latest">Latest Release</option>
+                        <option value="rating">Top Rated</option>
+                        <option value="title">Title (A-Z)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="trending">Trending</button>
+                <button class="tab-btn" data-tab="search-results" id="search-tab" style="display: none;">Search Results</button>
+                <button class="tab-btn" data-tab="watchlist">My Watchlist</button>
+            </div>
+        </section>
+
+        <section id="movie-display" class="movie-grid">
+            <!-- Movie cards will be injected here -->
+             <div class="loader-container" id="main-loader" style="display: none;">
+                <div class="loader"></div>
+             </div>
+             <div id="empty-state" class="empty-state" style="display: none;">
+                <i class="fas fa-search"></i>
+                <h3>No movies found</h3>
+                <p>Try searching for something else or check your spelling.</p>
+             </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Movie Explorer by Ayush Kumar. Data provided by OMDb, TMDB, and Watchmode.</p>
+        </div>
+    </footer>
+
+    <!-- Movie Detail Modal -->
+    <div id="movie-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div id="modal-body">
+                <!-- Details will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
