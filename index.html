@@ -4,52 +4,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CineWave | Experience Cinema</title>
-    <link rel="stylesheet" href="style.css">
+    <title>🎬 CineVault | Discover. Save. Watch.</title>
+    <link rel="stylesheet" href="css/style.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 
-<body>
+<body data-theme="dark">
 
-    <button class="drawer-toggle" onclick="toggleSavedDrawer()" title="View Watchlist">
-        <i class="ph ph-handbag"></i>
-    </button>
-
-    <header class="main-hero">
-        <h1>CineWave</h1>
-        <div class="search-area">
-            <input id="movie-search" type="text" placeholder="Search for your next favorite story..." />
+    <header>
+        <a href="#" class="logo">🎬 CineVault</a>
+        <nav>
+            <a href="#" class="active">Home</a>
+            <a href="#" onclick="toggleWatchlist()">Watchlist</a>
+            <a href="#" onclick="toggleSettingsLabels()">Settings</a>
+        </nav>
+        <div class="header-actions">
+            <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">🌙</button>
+            <button class="menu-btn mobile-only"><i class="ph ph-list"></i></button>
         </div>
     </header>
 
-    <div class="sorting-options">
-        <button onclick="sortByYear()">
-            <i class="ph ph-sort-ascending"></i> Release Year
-        </button>
-        <button onclick="filterLatest()">
-            <i class="ph ph-lightning"></i> New Arrivals
-        </button>
-        <button onclick="resetList()">
-            <i class="ph ph-arrow-counter-clockwise"></i> Reset
-        </button>
-    </div>
-
-    <main class="page-container">
-        
-        <div id="movie-display">
-            <!-- Movie cards or skeleton loaders will go here -->
+    <section class="hero">
+        <h1>Discover. Save. Watch.</h1>
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Search for movies, series & actors...">
+            <button class="btn-primary" onclick="handleSearch()">Search</button>
         </div>
+    </section>
 
-        <aside id="side-saved-list">
-            <h2>Saved Movies</h2>
-            <div id="saved-items">
-                <!-- Saved items rendered here -->
-            </div>
-        </aside>
+    <nav class="filters-bar">
+        <div class="genre-pills" id="genre-pills">
+            <!-- Dynamic Genre Pills -->
+        </div>
+        <div class="sort-dropdown">
+            <select id="sort-select" onchange="handleSort()">
+                <option value="pop">Sort by: Rating</option>
+                <option value="year">Sort by: Year</option>
+                <option value="title">Sort by: Title</option>
+            </select>
+        </div>
+    </nav>
 
+    <main class="movies-grid" id="movie-grid">
+        <!-- Movie Cards rendered here -->
     </main>
 
-    <script src="app.js"></script>
+    <div class="load-more-container">
+        <button id="load-more-btn" class="btn-secondary" onclick="loadMore()">Load More</button>
+        <p class="page-info">Page <span id="page-num">1</span></p>
+    </div>
+
+    <aside class="watchlist-panel" id="watchlist-panel">
+        <div class="panel-header">
+            <h2>Your Watchlist</h2>
+            <button class="close-btn" onclick="toggleWatchlist()"><i class="ph ph-x"></i></button>
+        </div>
+        <div class="watchlist-items" id="watchlist-items">
+            <!-- Watchlist Items -->
+        </div>
+    </aside>
+
+    <div class="modal-overlay" id="movie-modal">
+        <!-- Movie Details Modal content -->
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <footer>
+        <p>Built with ❤️ using OMDb, TMDB & Watchmode APIs</p>
+    </footer>
+
+    <script type="module" src="js/app.js"></script>
 </body>
 
 </html>
