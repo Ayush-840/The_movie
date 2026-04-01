@@ -4,26 +4,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CineWave | My Movie Watchlist</title>
+    <title>CineWave | Experience Cinema</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 
 <body>
 
+    <button class="drawer-toggle" onclick="toggleSavedDrawer()" title="View Watchlist">
+        <i class="ph ph-handbag"></i>
+    </button>
+
     <header class="main-hero">
         <h1>CineWave</h1>
         <div class="search-area">
-            <input id="movie-search" type="text" placeholder="What movie are you looking for?" />
+            <input id="movie-search" type="text" placeholder="Search for your next favorite story..." />
         </div>
     </header>
 
     <div class="sorting-options">
         <button onclick="sortByYear()">
-            <i class="ph ph-sort-ascending"></i> Sort by Year
+            <i class="ph ph-sort-ascending"></i> Release Year
         </button>
         <button onclick="filterLatest()">
-            <i class="ph ph-clock-afternoon"></i> New Releases
+            <i class="ph ph-lightning"></i> New Arrivals
         </button>
         <button onclick="resetList()">
             <i class="ph ph-arrow-counter-clockwise"></i> Reset
@@ -32,16 +36,14 @@
 
     <main class="page-container">
         
-        <section class="results-column">
-            <div id="movie-display">
-                <!-- Dynamic Content will go here -->
-            </div>
-        </section>
+        <div id="movie-display">
+            <!-- Movie cards or skeleton loaders will go here -->
+        </div>
 
         <aside id="side-saved-list">
-            <h2><i class="ph ph-heart"></i> My Saved Movies</h2>
+            <h2>Saved Movies</h2>
             <div id="saved-items">
-                <!-- Saved items will appear here -->
+                <!-- Saved items rendered here -->
             </div>
         </aside>
 
