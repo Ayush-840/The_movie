@@ -21,8 +21,58 @@ let state = {
     watchlist: JSON.parse(localStorage.getItem('movie_watchlist')) || [],
     currentTab: 'trending',
     loading: false,
-    genreMap: {}        // TMDB genre IDs to names
+    genreMap: {},        // TMDB genre IDs to names
+    isMock: false       // Flag if we are using mock data
 };
+
+// --- MOCK DATA ---
+const MOCK_MOVIES = [
+    {
+        id: 'mock-1',
+        title: 'Inception',
+        year: '2010',
+        rating: '8.8',
+        poster: 'https://image.tmdb.org/t/p/w500/o0jNaSjmS79uRojJuE9v8Zp9v8g.jpg',
+        genres: ['Action', 'Sci-Fi', 'Adventure'],
+        plot: 'A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.'
+    },
+    {
+        id: 'mock-2',
+        title: 'The Dark Knight',
+        year: '2008',
+        rating: '9.0',
+        poster: 'https://image.tmdb.org/t/p/w500/qJ2tW6WMUDp9QmSbmrKwszVfSyc.jpg',
+        genres: ['Action', 'Crime', 'Drama'],
+        plot: 'When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice.'
+    },
+    {
+        id: 'mock-3',
+        title: 'Interstellar',
+        year: '2014',
+        rating: '8.7',
+        poster: 'https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6Mxlv6vD2.jpg',
+        genres: ['Adventure', 'Drama', 'Sci-Fi'],
+        plot: 'A team of explorers travel through a wormhole in space in an attempt to ensure humanity\'s survival.'
+    },
+    {
+        id: 'mock-4',
+        title: 'Parasite',
+        year: '2019',
+        rating: '8.5',
+        poster: 'https://image.tmdb.org/t/p/w500/7IiTTjMvS2vR7ZcZ2S9vVvUAk1Z.jpg',
+        genres: ['Comedy', 'Drama', 'Thriller'],
+        plot: 'Greed and class discrimination threaten the newly formed symbiotic relationship between the wealthy Park family and the destitute Kim clan.'
+    },
+    {
+        id: 'mock-5',
+        title: 'Everything Everywhere All at Once',
+        year: '2022',
+        rating: '7.8',
+        poster: 'https://image.tmdb.org/t/p/w500/rKvC73aCoFp68m9n7AKqGUEq67c.jpg',
+        genres: ['Action', 'Adventure', 'Comedy'],
+        plot: 'A middle-aged Chinese immigrant is swept up into an insane adventure in which she alone can save existence by exploring other universes and connecting with the lives she could have led.'
+    }
+];
 
 // --- DOM ELEMENTS ---
 const elements = {
@@ -89,6 +139,24 @@ function setupEventListeners() {
 
 // Fetch Genres from TMDB
 async function fetchGenres() {
+    if (OMDB_API_KEY === 'your_omdb_key' || TMDB_BEARER_TOKEN === 'your_tmdb_bearer_token') {
+        state.isMock = true;
+        // Populate some hardcoded genres for filtering
+        const mockGenres = [
+            {id: 28, name: 'Action'}, {id: 12, name: 'Adventure'}, 
+            {id: 35, name: 'Comedy'}, {id: 18, name: 'Drama'},
+            {id: 878, name: 'Sci-Fi'}, {id: 53, name: 'Thriller'}
+        ];
+        mockGenres.forEach(genre => {
+            state.genreMap[genre.id] = genre.name;
+            const option = document.createElement('option');
+            option.value = genre.id;
+            option.textContent = genre.name;
+            elements.genreFilter.appendChild(option);
+        });
+        return;
+    }
+
     try {
         const response = await fetch('https://api.themoviedb.org/3/genre/movie/list?language=en-US', {
             headers: { 'Authorization': `Bearer ${TMDB_BEARER_TOKEN}` }
@@ -105,21 +173,38 @@ async function fetchGenres() {
         }
     } catch (error) {
         console.error('Error fetching genres:', error);
+        state.isMock = true;
     }
 }
 
 // Load Trending Movies (TMDB)
 async function loadTrendingMovies() {
     setLoading(true);
+
+    if (state.isMock) {
+        state.allMovies = [...MOCK_MOVIES];
+        applyFiltersAndSort();
+        setLoading(false);
+        showMockWarning();
+        return;
+    }
+
     try {
         const response = await fetch('https://api.themoviedb.org/3/trending/movie/week', {
             headers: { 'Authorization': `Bearer ${TMDB_BEARER_TOKEN}` }
         });
         const data = await response.json();
-        state.allMovies = data.results.map(movie => formatTMDBMovie(movie));
-        applyFiltersAndSort();
+        if (data.results) {
+            state.allMovies = data.results.map(movie => formatTMDBMovie(movie));
+            applyFiltersAndSort();
+        } else {
+            state.isMock = true;
+            loadTrendingMovies(); // Retry with mock
+        }
     } catch (error) {
         console.error('Error loading trending:', error);
+        state.isMock = true;
+        loadTrendingMovies();
     } finally {
         setLoading(false);
     }
@@ -135,6 +220,14 @@ async function handleSearch() {
     document.getElementById('search-tab').style.display = 'block';
     elements.tabButtons.forEach(b => b.classList.remove('active'));
     document.getElementById('search-tab').classList.add('active');
+
+    if (state.isMock) {
+        // Search in mock data using filter() and includes()
+        state.allMovies = MOCK_MOVIES.filter(m => m.title.toLowerCase().includes(query.toLowerCase()));
+        applyFiltersAndSort();
+        setLoading(false);
+        return;
+    }
 
     try {
         const response = await fetch(`https://www.omdbapi.com/?s=${encodeURIComponent(query)}&apikey=${OMDB_API_KEY}`);
@@ -364,4 +457,19 @@ function applyInitialTheme() {
     if (savedTheme === 'light') {
         toggleTheme();
     }
+}
+function showMockWarning() {
+    const warning = document.createElement('div');
+    warning.style.cssText = `
+        background-color: #fbbf24;
+        color: #000;
+        text-align: center;
+        padding: 0.5rem;
+        font-weight: 600;
+        position: sticky;
+        top: 70px;
+        z-index: 999;
+    `;
+    warning.innerHTML = `Running in <strong>Mock Mode</strong>. Please add your API keys in <code>app.js</code> to use the real API.`;
+    document.body.prepend(warning);
 }
