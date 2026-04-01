@@ -1,0 +1,12 @@
+{
+  "name": "the-movie-explorer",
+  "version": "1.0.0",
+  "description": "A web app where you can search for any movie and see its ratings and details.",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx serve ."
+  },
+  "keywords": [],
+  "author": "Ayush Kumar",
+  "license": "ISC"
+}

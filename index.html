@@ -13,6 +13,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="dark-theme">
+    <div id="settings-warning" class="settings-bar" style="display: none;">
+        <span><i class="fas fa-exclamation-triangle"></i> Running in Mock Mode. Please add your API keys to see real data.</span>
+        <button id="open-settings-btn">Setup APIs</button>
+    </div>
     <header>
         <nav class="container">
             <div class="logo">
@@ -95,6 +99,30 @@
             <span class="close-modal">&times;</span>
             <div id="modal-body">
                 <!-- Details will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content" style="max-width: 500px; padding: 2rem;">
+            <span class="close-modal">&times;</span>
+            <h2>API Settings</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">Enter your keys to fetch live data from OMDb and TMDB.</p>
+            <div class="settings-form">
+                <div class="filter-group">
+                    <label>OMDb API Key</label>
+                    <input type="text" id="omdb-key-input" placeholder="e.g. 123a456b">
+                </div>
+                <div class="filter-group">
+                    <label>TMDB Bearer Token</label>
+                    <input type="text" id="tmdb-key-input" placeholder="Paste your long token here...">
+                </div>
+                <div class="filter-group">
+                    <label>Watchmode API Key</label>
+                    <input type="text" id="watchmode-key-input" placeholder="e.g. abcd1234">
+                </div>
+                <button id="save-settings-btn">Save & Reload</button>
             </div>
         </div>
     </div>
