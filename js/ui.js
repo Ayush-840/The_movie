@@ -4,18 +4,30 @@ const UI = {
     },
 
     createMovieCard(movie) {
-        const poster = movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/300x450?text=No+Poster';
+        const hasPoster = movie.Poster && movie.Poster !== 'N/A';
+        const fallbackPoster = 'https://via.placeholder.com/300x450/1b1e20/666666?text=Poster+Not+Available';
+        const posterUrl = hasPoster ? movie.Poster : fallbackPoster;
+        const posterHtml = `<img src="${posterUrl}" alt="${movie.Title}" loading="lazy" class="movie-poster" onerror="this.onerror=null; this.src='${fallbackPoster}';">`;
+               
         const isLatest = parseInt(movie.Year) >= 2024;
+        
+        // Handle rating if available, otherwise show "Rating Pending"
+        const ratingHtml = movie.imdbRating && movie.imdbRating !== 'N/A' 
+            ? `<span class="card-rating"><i class="ph-fill ph-star gold-star"></i> ${movie.imdbRating}</span>`
+            : `<span class="rating-unknown">Rating Pending</span>`;
+
         return `
             <div class="movie-card" data-id="${movie.imdbID}">
-                <div class="year-badge">${movie.Year}</div>
+                <div class="year-badge">${movie.Year || 'N/A'}</div>
                 ${isLatest ? '<div class="featured-badge">FEATURED</div>' : ''}
-                <img src="${poster}" alt="${movie.Title}" loading="lazy">
+                <div class="poster-wrapper">
+                    ${posterHtml}
+                </div>
                 <div class="card-overlay">
                     <h3 class="card-title" title="${movie.Title}">${movie.Title}</h3>
                     <div class="card-meta">
-                        <span>🎬 Movie</span>
-                        <span>⭐ N/A</span>
+                        <span class="muted-text">🎬 ${movie.Type ? movie.Type.charAt(0).toUpperCase() + movie.Type.slice(1) : 'Movie'}</span>
+                        ${ratingHtml}
                     </div>
                 </div>
                 <div class="card-actions">
